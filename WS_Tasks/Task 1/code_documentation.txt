@@ -1,0 +1,72 @@
+TECHNICAL DOCUMENTATION: Path Planning on IIT Kharagpur's Map
+============================================================
+
+I. MODULE & FUNCTION DESCRIPTIONS
+----------------------------------
+Function: click_event(event, x y, flags, params)
+- Purpose: Processes user input and stores coordinates of clicked points.
+- Parameters: 
+    * event : Type of mouse event detected by OpenCV.
+    * x, y : Coordinates of the mouse click.
+    * flags : Additional event flags
+    * param : Extra parameters passed by OpenCV.
+- Returns: No Return value
+
+Function: dist(a, b)
+- Purpose: Calculates Euclidean distance between two points a and b
+- Parameters:
+    * a : First point
+    * b : Second point
+- Returns: Euclidean distance between the two points
+
+Function: steer(a, b)
+- Purpose: Moves from node a to node b, but only by a fixed step size
+- Parameters:
+    * a : Origin node
+    * b : Destination node
+- Returns: Direction ratio of vector to move along
+
+Function: collision(a, b)
+- Purpose: Checks whether line segment connecting two points contains points coinciding with obstacle or not.
+- Parameters:
+    * a : First point
+    * b : Second point
+- Returns: True if there are one or more coinciding points. False otherwise.
+
+
+II. DATA STRUCTURES
+--------------------
+- List: 'lst' to store start and end points
+- List: 'nodes' to store set of nodes explored
+- Dictionary: 'parent' to store parent nodes of each node for backtracking
+- Dictionary: 'cost' to store cost of each node from beginning node
+
+III. ALGORITHM / LOGIC FLOW
+--------------------------
+1. Initialization: Load the maze image (maze.png).
+	Resize it to 400×400 pixels.
+	Convert it to grayscale and create a binary obstacle map.
+2. Input: The user selects start and goal points by clicking on the displayed maze.
+3. Tree Construction (RRT*): Random points are sampled within the environment.
+	The nearest existing node in the tree is found.
+	A new node is generated toward the random point using the steer() function.
+4. Collision Checking: The algorithm verifies that the new node does not intersect obstacles.
+5. Optimal Parent Selection: Among nearby nodes, the one providing the lowest path cost is selected as the parent.
+6. Rewiring Optimization: Neighboring nodes may change their parent to the new node if it reduces their total path cost.
+7. Goal Detection: If the new node is within the step distance of the goal and the path is collision-free, the algorithm stops.
+8. Output: The final path is reconstructed by following parent nodes from goal to start.
+	The path is drawn on the image and displayed.
+
+IV. ERROR HANDLING
+-----------------
+- Image Load Failure: If maze.png cannot be loaded, the program prints an error message and terminates.
+- Invalid Point Selection: If a user clicks on an obstacle (black pixel), the program warns the user and ignores the click.
+- Boundary Checks: Coordinates are validated to ensure they remain within the image limits.
+- Iteration Limit: If no path is found within the defined iteration count (6000), the program reports failure.
+
+V. TEST CASES
+--------------
+- Normal Maze Input: The algorithm successfully finds and displays a path.
+- Invalid Click on Obstacle: Warning message appears and the point is rejected.
+- No Possible Path: Program runs until iteration limit and prints “No path found within iteration limit.”
+============================================================
