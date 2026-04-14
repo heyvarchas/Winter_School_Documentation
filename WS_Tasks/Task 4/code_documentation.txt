@@ -1,0 +1,50 @@
+TECHNICAL DOCUMENTATION: Background Removal via K-Means [Real Time Virtual Background]
+============================================================
+
+I. MODULE & FUNCTION DESCRIPTIONS
+----------------------------------
+- Monolithic style of coding is used
+- No functions are defined within the program - functions used are library functions present in imported modules
+
+II. DATA STRUCTURES
+--------------------
+- NumPy Array: 'frame' stores the current frame captured from the webcam.
+- NumPy Array: 'pixels' flattened array of RGB pixel values used for K-means clustering.
+- NumPy Array 'centroids' stores the cluster center values representing dominant colors.
+- NumPy Array: 'labels' stores the cluster index assigned to each pixel.
+- 2D NumPy Array: 'labels_2d' reshaped version of labels representing cluster membership for each pixel in the frame.
+- NumPy Array: 'mask' binary mask distinguishing foreground and background regions.
+- NumPy Array: 'alpha' Multi-channel mask used during alpha blending.
+
+III. ALGORITHM / LOGIC FLOW
+--------------------------
+1. Initialization: The webcam stream is opened using OpenCV.
+	A replacement background image is loaded from disk.
+2. Frame Capture: The program continuously reads frames from the webcam.
+3. Data Preparation: Each frame is flattened into pixel vectors for clustering.
+	Random centroids are selected for the K-means algorithm.
+4. Clustering Process: Pixel-to-centroid distances are calculated.
+	Each pixel is assigned to the nearest cluster.
+ 	Cluster centroids are updated iteratively.
+5. Background Identification: Cluster labels from the frame edges are collected.
+	The most frequent label is assumed to represent the background.
+6. Mask Refinement: A binary mask is created for the background cluster.
+	Morphological dilation removes thin edge artifacts.
+	Gaussian blur softens mask edges.
+7. Frame Composition: Alpha blending merges the webcam foreground with the replacement background image.
+8. Output: The processed frame is displayed in real-time.
+	The loop continues until the user presses the 'q' key.
+
+IV. ERROR HANDLING
+-----------------
+- Camera Access Error: If the webcam cannot be opened, the program prints an error message and terminates execution.
+- Frame Capture Failure: If a frame cannot be retrieved from the camera stream, the program stops processing and exits the loop.
+- Missing Background Image: If the background image cannot be loaded, the resizing operation may fail and should be verified before execution.
+- Empty Clusters: During centroid updates, clusters with no assigned pixels retain their previous centroid values to avoid computational errors.
+
+V. TEST CASES
+--------------
+1. Normal Operation: The background is replaced in real time while the subject remains visible.
+2. Complex Background: K-means segmentation still separates dominant background regions, though minor segmentation artifacts may appear.
+3. Rapid Movement: The algorithm continues processing frames in real time, though segmentation accuracy may fluctuate for sometiem.
+============================================================
