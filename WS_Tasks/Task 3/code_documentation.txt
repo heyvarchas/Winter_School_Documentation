@@ -1,0 +1,51 @@
+TECHNICAL DOCUMENTATION: Background Removal via K-Means
+============================================================
+
+I. MODULE & FUNCTION DESCRIPTIONS
+----------------------------------
+- Monolithic style of coding is used
+- No functions are defined within the program - functions used are library functions present in imported modules
+
+II. DATA STRUCTURES
+--------------------
+- NumPy Array: 'pixels' Stores flattened RGB pixel values of the image. Used as input data for the K-means clustering process.
+- NumPy Array: 'centroids' stores the cluster centers representing dominant colors.
+- NumPy Array: 'labels' stores the cluster index assigned to each pixel.
+- 2D NumPy Array: 'labels_2d' reshaped form of labels representing cluster membership for each pixel position in the image.
+- NumPy Array (mask' binary mask separating background and foreground.
+- NumPy Array: 'alpha' multi-channel mask used for alpha blending during final composition.
+
+III. ALGORITHM / LOGIC FLOW
+--------------------------
+1. Initialization: Load the foreground image and the replacement background image using OpenCV.
+	Extract the height and width of the original image.
+	Resize the background image to match these dimensions.
+2. Data Preparation: Convert the image into a flattened array of pixel RGB values.
+	Convert pixel values to floating-point format for numerical calculations.
+3. K-Means Clustering: Randomly initialize k = 5 centroids.
+	For a fixed number of iterations:
+		Compute the distance of each pixel from every centroid.
+		Assign pixels to the nearest centroid.
+		Recalculate centroid positions using the mean of assigned pixels.
+		Stop early if centroids converge.
+4. Background Detection: Extract cluster labels from the four edges of the image.
+	Perform a majority vote to determine which cluster represents the background.
+5. Mask Creation and Optimization: Generate a binary mask identifying background pixels.
+	Apply dilation to slightly expand the background area and remove thin border artifacts.
+	Apply Gaussian blur to soften mask edges.
+6. Final Image Composition: Convert the mask into an alpha channel.
+	Combine the foreground and replacement background using alpha blending.
+7. Output: Display the final image with the replaced background.
+
+IV. ERROR HANDLING
+-----------------
+- File Validation: If either input image fails to load, the program prints an error message and exits.
+- Empty Cluster Handling: During centroid updates, if a cluster receives no pixels, the previous centroid value is retained.
+- Numerical Stability: The convergence check uses np.allclose() with a tolerance threshold to avoid unnecessary iterations.
+
+V. TEST CASES
+--------------
+1. Normal Image with Clear Background: Background is successfully replaced with minimal artifacts.
+2. Image with Complex Background: K-means may partially segment the background; performance depends on value of k.
+3. Missing Image Files: Program prints "Error: Could not find image files." and terminates.
+============================================================
