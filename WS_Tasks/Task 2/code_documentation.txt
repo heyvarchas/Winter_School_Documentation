@@ -1,0 +1,108 @@
+TECHNICAL DOCUMENTATION: Path Planning on IIT Kharagpur's Map [RRT* Infused TSP]
+============================================================
+
+I. MODULE & FUNCTION DESCRIPTIONS
+----------------------------------
+Function: click_event(event, x, y, flags, params)
+- Purpose: Handles mouse click events for selecting valid points on the maze.
+- Parameters:
+    * event: Type of mouse event detected by OpenCV.
+    * x, y: Coordinates of the mouse click.
+    * flags: Additional event flags.
+    * params: Extra parameters passed by OpenCV.
+- Behavior:
+    * Adds the clicked point to a list if it lies on free space.
+    * Prevents placement of points on obstacles.
+    * Displays selected points visually on the maze image.
+
+Function: dist(a, b)
+- Purpose: Computes the Euclidean distance between two coordinates.
+- Parameters:
+    * a : First point (x, y).
+    * b : Second point (x, y).
+- Returns:
+    * Float value representing the distance between the points.
+
+Function: steer(a, b, step)
+- Purpose: Generates a new point in the direction from point a toward point b.
+- Parameters:
+    * a : Start node
+    * b : Target point
+    * step (int): Maximum distance allowed for the step.
+- Returns:
+    * A new coordinate representing the intermediate step.
+
+Function: is_collision(a, b)
+- Purpose: Checks whether a straight line between two points intersects an obstacle.
+- Parameters:
+    * a : Start coordinate.
+    * b : End coordinate.
+- Returns: True if a collision occurs. False otherwise.
+
+Function: get_path_cost(start, goal)
+- Purpose: Estimates the actual travel distance between two points in the maze.
+- Method:
+    * Uses a simplified RRT-based sampling method to explore the maze.
+- Parameters:
+    * start (tuple): Starting coordinate.
+    * goal (tuple): Target coordinate.
+- Returns:
+    * Approximate cost (distance) of reaching the goal.
+    * Returns a large penalty value if a path cannot be found.
+
+Function: solve_true_tsp(points)
+- Purpose: Determines the optimal order in which the selected points should be visited.
+- Method:
+    * Computes a cost matrix representing pairwise maze distances.
+    * Uses brute-force permutations to evaluate all possible visit orders.
+- Parameters:
+    * points : List of user-selected coordinates.
+- Returns:
+    * Ordered list of points representing the shortest visiting sequence.
+
+Function: run_rrt_star(start, goal)
+- Purpose: Generates a high-quality path between two points using the RRT* algorithm.
+- Method:
+    * Expands nodes randomly in the maze.
+    * Chooses optimal parents for nodes within a defined radius.
+    * Performs rewiring to minimize path cost.
+- Parameters:
+    * start : Starting coordinate.
+    * goal : Target coordinate.
+- Returns:
+    * Parent mapping of nodes and the final goal node.
+
+II. DATA STRUCTURES
+--------------------
+- List: 'clicked_points' Stores the coordinates of user-selected points on the maze.
+- List: 'nodes' maintains the nodes generated during RRT exploration.
+- Dictionary: 'parent' stores parent-child relationships between nodes in the RRT tree, enabling reconstruction of the final path.
+- Dictionary: 'cost' tracks the cumulative path cost from the start node to each node.
+- NumPy Array: 'cost_matrix' stores pairwise distances between selected points. Used for solving the Traveling Salesman Problem.
+- Tuple: (x, y) represents coordinates of points in the maze.
+
+III. ALGORITHM / LOGIC FLOW
+--------------------------
+1. Initialization: The maze image is loaded and resized.
+	The image is converted to grayscale and thresholded to create a binary map distinguishing obstacles from free space.
+2. Input: The user selects 4–8 valid points on the maze using mouse clicks.
+   	Points placed on obstacles are rejected.
+3. Cost Matrix Construction: For every pair of selected points, the function get_path_cost() estimates the real navigable distance using random exploration.
+4. TSP Optimization: A brute-force permutation method determines the optimal sequence of visiting all points based on the cost matrix.
+5. Path Generation: For each consecutive pair of points in the optimized order, the RRT* algorithm generates a high-quality collision-free path.
+6. Visualization: The path segments are drawn onto the maze image.
+	The optimized route is displayed progressively in a window.
+
+IV. ERROR HANDLING
+-----------------
+- Image Loading Error: If "maze.png" cannot be found or loaded, the program prints an error message and terminates execution.
+- Obstacle Placement Prevention: Points cannot be placed on obstacle regions of the maze. A warning message is printed if such an attempt occurs.
+- Unreachable Paths: If the algorithm fails to find a path between two points during cost estimation, a large penalty value is assigned to discourage selecting that path in the TSP solution.
+- Boundary Checks: Coordinates are validated to ensure they remain within image limits before processing.
+
+V. TEST CASES
+--------------
+1. Normal Input: The algorithm computes the optimal visiting order and displays a collision-free path connecting all points.
+2. Invalid Point Placement: The program rejects the point and prints a warning message.
+3. Sparse or Difficult Maze Paths: The algorithm still computes an approximate cost matrix and generates feasible paths using RRT*.
+============================================================
